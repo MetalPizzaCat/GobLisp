@@ -1,0 +1,6 @@
+# NET build stuff
+bin/
+obj/
+
+# editor stuff
+.vscode/
