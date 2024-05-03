@@ -5,8 +5,8 @@ class Program
 {
     static void Main(string[] args)
     {
-        string code = "(+ 2 3)";
-        GobLangNet.Parsing.ExpressionToken? result = GobLangNet.Parsing.GobLispParser.GenerateTree(code);
+        string code = "(let (a 2) (b ( + 3 4)))";
+        GobLangNet.Parsing.ICodeToken? result = GobLangNet.Parsing.GobLispParser.GenerateTree(code);
 
         if (result == null)
         {

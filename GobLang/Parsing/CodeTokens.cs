@@ -1,12 +1,12 @@
 namespace GobLangNet.Parsing;
 
-public interface CodeToken
+public interface ICodeToken
 {
     public abstract IEnumerable<byte> GenerateByteCode();
 }
 
 
-public class StringToken : CodeToken
+public class StringToken : ICodeToken
 {
     public string Value { get; set; }
 
@@ -21,7 +21,7 @@ public class StringToken : CodeToken
     }
 }
 
-public class NumberToken : CodeToken
+public class NumberToken : ICodeToken
 {
     public float Value { get; set; }
 
@@ -38,26 +38,11 @@ public class NumberToken : CodeToken
     }
 }
 
-
-public class ExpressionToken : CodeToken
+public class CommandSequenceToken : ICodeToken
 {
-    public ExpressionToken(CodeToken header, List<CodeToken> tokens)
-    {
-        Header = header;
-        Tokens = tokens;
-    }
-
-    public CodeToken Header { get; set; }
-    public List<CodeToken> Tokens { get; set; }
-
+    public List<ICodeToken> Tokens { get; set; }
     public IEnumerable<byte> GenerateByteCode()
     {
-        List<byte> bytes = new List<byte>();
-        foreach (CodeToken token in Tokens)
-        {
-            bytes.AddRange(token.GenerateByteCode());
-        }
-        bytes.AddRange(Header.GenerateByteCode());
-        return bytes;
+        throw new NotImplementedException();
     }
 }

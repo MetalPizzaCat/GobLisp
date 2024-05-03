@@ -14,7 +14,7 @@ public enum OperationType
     MoreOrEqual
 }
 
-public class OperationToken : CodeToken
+public class OperationToken : ICodeToken
 {
     public OperationType OperationType { get; set; }
 

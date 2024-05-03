@@ -22,14 +22,30 @@ public static class GobLispParser
         from number in Parse.DecimalInvariant.Token()
         select new NumberToken(float.Parse(number) * (op.IsDefined ? -1f : 1f));
 
-    private static readonly Parser<ExpressionToken> _functionParser =
-    (
-        from head in _operationParser.XOr<CodeToken>(_textParser).Token()
-        from contents in _functionParser.XOr<CodeToken>(_numberParser).XOr(_textParser).Token().XMany()
-        select new ExpressionToken(head, contents.ToList())
-    ).Contained(Parse.Char('('), Parse.Char(')'));
 
-    static public ExpressionToken GenerateTree(string code)
+
+    private static readonly Parser<VariableDeclarationToken> _variableDeclarationParser =
+        (from name in Parse.Identifier(Parse.Letter, Parse.LetterOrDigit.Or(Parse.Char('_'))).Token()
+         from defaultValue in (_numberParser.XOr(_functionParser)).Token()
+         select new VariableDeclarationToken(name, defaultValue)).Contained(Parse.Char('('), Parse.Char(')'));
+
+    private static readonly Parser<VariableDeclarationOperationToken> _variableDeclarationOperationParser =
+        from letTitle in Parse.String("let").Token()
+        from variables in _variableDeclarationParser.Token().XMany()
+        select new VariableDeclarationOperationToken(variables);
+
+
+    private static readonly Parser<ICodeToken> _systemOperationParser =
+            _variableDeclarationOperationParser.Or<ICodeToken>(
+            from head in _operationParser.XOr<ICodeToken>(_textParser).Token()
+            from contents in _functionParser.XOr(_numberParser).XOr(_textParser).Token().XMany()
+            select new ExpressionToken(head, contents.ToList()));
+
+    private static readonly Parser<ICodeToken> _functionParser =
+    _systemOperationParser
+    .Contained(Parse.Char('('), Parse.Char(')'));
+
+    static public ICodeToken GenerateTree(string code)
     {
         return _functionParser.Parse(code);
     }

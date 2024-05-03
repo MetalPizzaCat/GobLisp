@@ -1,7 +1,7 @@
 namespace Tests;
 
 [TestClass]
-public class UnitLanguageTests
+public class UnitLanguageMachineTests
 {
 
     [TestMethod]
@@ -60,35 +60,45 @@ public class UnitLanguageTests
     }
 
     [TestMethod]
-    public void TestBasicCodeGeneration()
+    public void TestNativeFuncCall()
     {
-        string code = "(+ 2 3)";
+        /*
+            push 69
+            call 0
+        */
+        GobLangNet.OperationQueue operation = new GobLangNet.OperationQueue();
+        operation.Push(GobLangNet.LanguageOperation.PushInt);
+        operation.PushInt(69);
+        operation.Push(GobLangNet.LanguageOperation.CallFunc);
+        operation.PushInt(0);
+        GobLangNet.ExecutionMachine machine = new GobLangNet.ExecutionMachine(operation);
+        List<string> output = new();
 
-        GobLangNet.Parsing.ExpressionToken? root = GobLangNet.Parsing.GobLispParser.GenerateTree(code);
-        Assert.IsNotNull(root);
-        IEnumerable<byte> bytes = root.GenerateByteCode();
+        machine.OnValuePrinted += output.Add;
 
-        List<byte> expected = new List<byte>();
-        expected.Add((byte)GobLangNet.LanguageOperation.PushFloat);
-        expected.AddRange(BitConverter.GetBytes(2f).Reverse());
-        expected.Add((byte)GobLangNet.LanguageOperation.PushFloat);
-        expected.AddRange(BitConverter.GetBytes(3f).Reverse());
-        expected.Add((byte)GobLangNet.LanguageOperation.AddFloat);
-
-        CollectionAssert.AreEquivalent(expected, bytes.ToList());
+        while (machine.Step()) ;
+        Assert.AreEqual(output.FirstOrDefault(), "69");
     }
 
-    [TestMethod]
-    public void TestBasicCodeExecution()
+     [TestMethod]
+    public void TesFib()
     {
-        string code = "(+ 2 3)";
+        /*
+            push 69
+            call 0
+        */
+        GobLangNet.OperationQueue operation = new GobLangNet.OperationQueue();
+        operation.Push(GobLangNet.LanguageOperation.PushInt);
+        operation.PushInt(69);
+        operation.Push(GobLangNet.LanguageOperation.CallFunc);
+        operation.PushInt(0);
+        GobLangNet.ExecutionMachine machine = new GobLangNet.ExecutionMachine(operation);
+        List<string> output = new();
 
-        GobLangNet.Parsing.ExpressionToken? root = GobLangNet.Parsing.GobLispParser.GenerateTree(code);
-        Assert.IsNotNull(root);
-        IEnumerable<byte> bytes = root.GenerateByteCode();
+        machine.OnValuePrinted += output.Add;
 
-        GobLangNet.ExecutionMachine executionMachine = new GobLangNet.ExecutionMachine(new GobLangNet.OperationQueue(bytes));
-        while (executionMachine.Step()) ;
-        Assert.AreEqual(5f, BitConverter.Int32BitsToSingle(executionMachine.ProgramStack.Peek()));
+        while (machine.Step()) ;
+        Assert.AreEqual(output.FirstOrDefault(), "69");
     }
+
 }
