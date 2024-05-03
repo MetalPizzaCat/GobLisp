@@ -1,10 +1,76 @@
-﻿namespace GobLangNet;
+namespace Tests;
 
-
-class Program
+[TestClass]
+public class SpecialTests
 {
-    static void Main(string[] args)
+
+    [TestMethod]
+    public void TesFib()
     {
+        /*
+        this is based on this code
+
+        program name
+    implicit none
+    
+    integer :: start
+    integer :: end
+
+    integer :: a
+    integer :: b
+    integer :: c
+
+    integer :: i
+
+    a = 0
+    b = 1
+    c = a + b
+
+    start = 2
+    end = 40
+
+    do i = start, end
+        c = a + b
+        a = b
+        b = c
+    end do
+
+    print *, 'result: ', b
+
+end program name
+        */
+        /*
+            ; a is var0
+            ; b is var1
+            ; c is var2
+            ; i is var3
+
+            ; set b to 1
+            push 1
+            set 1
+            ; set c to a + b = 0 + 1
+            push 1
+            set 2
+            ; start loop
+            push 2
+            set 3
+            ; check loop
+            get 3
+            push 40
+            check:
+            if_more_or_equal $end
+            get 0
+            get 1
+            add
+            set 2
+            get 1
+            set 0
+            get 2
+            set 1
+            goto $check
+            end: 
+            stop
+        */
         GobLangNet.OperationList operation = new GobLangNet.OperationList();
         /*
             push 1
@@ -40,7 +106,7 @@ class Program
         operation.Push(GobLangNet.LanguageOperation.GetInt);
         operation.Push(3);
         operation.Push(GobLangNet.LanguageOperation.PushInt);
-        operation.PushInt(40);
+        operation.PushInt(41);
         /*
             check:
             if_more_or_equal $end
@@ -87,8 +153,8 @@ class Program
         operation.Push(3);
         operation.Push(GobLangNet.LanguageOperation.PushInt);
         operation.PushInt(1);
-        operation.Push(LanguageOperation.AddInt);
-        operation.Push(LanguageOperation.SetInt);
+        operation.Push(GobLangNet.LanguageOperation.AddInt);
+        operation.Push(GobLangNet.LanguageOperation.SetInt);
         operation.Push(3);
         /*
             goto $check
@@ -105,15 +171,13 @@ class Program
         operation.Push(GobLangNet.LanguageOperation.CallFunc);
         operation.PushInt(0);
         operation.Push(GobLangNet.LanguageOperation.Stop);
-
-        File.WriteAllBytes("./bin/Debug/net7.0/code.bin", operation.Bytes.ToArray());
         GobLangNet.ExecutionMachine machine = new GobLangNet.ExecutionMachine(operation);
         List<string> output = new();
 
         machine.OnValuePrinted += output.Add;
 
         while (machine.Step()) ;
-
-        Console.WriteLine($"Expected: 63245986, Got: {output[0]}");
+        Assert.AreEqual("102334155", output.FirstOrDefault());
     }
+
 }

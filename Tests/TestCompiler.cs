@@ -33,7 +33,7 @@ public class UnitLanguageTests
         Assert.IsNotNull(root);
         IEnumerable<byte> bytes = root.GenerateByteCode();
 
-        GobLangNet.ExecutionMachine executionMachine = new GobLangNet.ExecutionMachine(new GobLangNet.OperationQueue(bytes));
+        GobLangNet.ExecutionMachine executionMachine = new GobLangNet.ExecutionMachine(new GobLangNet.OperationList(bytes));
         while (executionMachine.Step()) ;
         Assert.AreEqual(5f, BitConverter.Int32BitsToSingle(executionMachine.ProgramStack.Peek()));
     }
@@ -48,7 +48,7 @@ public class UnitLanguageTests
         Assert.IsNotNull(root);
         IEnumerable<byte> bytes = root.GenerateByteCode();
 
-        GobLangNet.ExecutionMachine executionMachine = new GobLangNet.ExecutionMachine(new GobLangNet.OperationQueue(bytes));
+        GobLangNet.ExecutionMachine executionMachine = new GobLangNet.ExecutionMachine(new GobLangNet.OperationList(bytes));
         while (executionMachine.Step()) ;
         Assert.AreEqual((2f + 8f) + (3f - -3f), BitConverter.Int32BitsToSingle(executionMachine.ProgramStack.Peek()));
     }

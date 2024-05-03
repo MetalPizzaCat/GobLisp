@@ -1,36 +1,37 @@
 namespace GobLangNet;
 
-public class OperationQueue
+public class OperationList
 {
+    public int ProgramCounter { get; set; }
 
-    public Queue<byte> Bytes { get; private set; }
+    public List<byte> Bytes { get; private set; }
 
-    public OperationQueue(IEnumerable<byte> bytes)
+    public OperationList(IEnumerable<byte> bytes)
     {
-        Bytes = new Queue<byte>(bytes);
+        Bytes = bytes.ToList();
     }
 
-    public OperationQueue()
+    public OperationList()
     {
-        Bytes = new Queue<byte>();
+        Bytes = new List<byte>();
     }
 
     public void PushInt(int value)
     {
         for (int i = 3; i >= 0; i--)
         {
-            Bytes.Enqueue((byte)(((0xFF << (i * 8)) & value) >> (i * 8)));
+            Bytes.Add((byte)(((0xFF << (i * 8)) & value) >> (i * 8)));
         }
     }
 
     public void Push(byte value)
     {
-        Bytes.Enqueue(value);
+        Bytes.Add(value);
     }
 
     public void Push(LanguageOperation value)
     {
-        Bytes.Enqueue((byte)value);
+        Bytes.Add((byte)value);
     }
 
     public void PushFloat(float value)
@@ -38,7 +39,7 @@ public class OperationQueue
         uint val = BitConverter.SingleToUInt32Bits(value);
         for (int i = 3; i >= 0; i--)
         {
-            Bytes.Enqueue((byte)(((0xFF << (i * 8)) & val) >> (i * 8)));
+            Bytes.Add((byte)(((0xFF << (i * 8)) & val) >> (i * 8)));
         }
     }
 
@@ -47,7 +48,7 @@ public class OperationQueue
         int result = 0;
         for (int i = 3; i >= 0; i--)
         {
-            result |= ((int)Bytes.Dequeue()) << (i * 8);
+            result |= ((int)Bytes[ProgramCounter++]) << (i * 8);
         }
         return result;
     }
@@ -57,18 +58,18 @@ public class OperationQueue
         uint result = 0;
         for (int i = 3; i >= 0; i--)
         {
-            result |= ((uint)Bytes.Dequeue()) << (i * 8);
+            result |= ((uint)Bytes[ProgramCounter++]) << (i * 8);
         }
         return BitConverter.UInt32BitsToSingle(result);
     }
 
     public byte Pop()
     {
-        return Bytes.Dequeue();
+        return Bytes[ProgramCounter++];
     }
 
     public bool IsEmpty()
     {
-        return Bytes.Count == 0;
+        return Bytes.Count == ProgramCounter;
     }
 }

@@ -26,6 +26,29 @@ public enum LanguageOperation
     /// </summary>
     CallFunc,
     /// <summary>
+    /// Pop two values from stack and jump to an address if a is less than b
+    /// </summary>
+    IfLess,
+    /// <summary>
+    /// Pop two values from stack and jump to an address if a is more than b
+    /// </summary>
+    IfMore,
+    IfEqual,
+    IfLessOrEqual,
+    IfMoreOrEqual,
+    /// <summary>
+    /// Move to an address in execution stack
+    /// </summary>
+    GoTo,
+    /// <summary>
+    /// Pops a value from the operation stack and stores it in variable array
+    /// </summary>
+    SetInt,
+    /// <summary>
+    /// Gets value from variable array and pushes it on the stack
+    /// </summary>
+    GetInt,
+    /// <summary>
     /// Ends the execution
     /// </summary>
     Stop,
@@ -56,7 +79,7 @@ public class ExecutionMachine
     /// Although by default system has a strick 32 variable limit this can be changed to any other system if necessary 
     /// </summary>
     public int[] Variables { get; private set; } = new int[32];
-    public OperationQueue Operations { get; private set; }
+    public OperationList Operations { get; private set; }
 
     public Stack<int> ProgramStack { get; private set; } = new();
 
@@ -64,7 +87,7 @@ public class ExecutionMachine
     public List<FunctionData> Functions { get; }
     public List<Func<List<int>, int?>> NativeFunctions { get; }
 
-    public ExecutionMachine(OperationQueue program)
+    public ExecutionMachine(OperationList program)
     {
         Operations = program;
 
@@ -169,16 +192,76 @@ public class ExecutionMachine
                 ProgramStack.Push(BitConverter.SingleToInt32Bits(Operations.PopFloat()));
                 break;
             case LanguageOperation.SetFloat:
+            case LanguageOperation.SetInt:
                 Variables[Operations.Pop()] = ProgramStack.Pop();
                 break;
             case LanguageOperation.GetFloat:
+            case LanguageOperation.GetInt:
                 ProgramStack.Push(Variables[Operations.Pop()]);
                 break;
             case LanguageOperation.CallFunc:
                 CallFunction();
                 break;
+            case LanguageOperation.GoTo:
+                Operations.ProgramCounter = Operations.PopInt();
+                break;
+            case LanguageOperation.IfEqual:
+                {
+                    float b = BitConverter.Int32BitsToSingle(ProgramStack.Pop());
+                    float a = BitConverter.Int32BitsToSingle(ProgramStack.Pop());
+                    int destination = Operations.PopInt();
+                    if (MathF.Abs(a - b) < 0.000001f)
+                    {
+                        Operations.ProgramCounter = destination;
+                    }
+                }
+                break;
+            case LanguageOperation.IfLess:
+                {
+                    float b = BitConverter.Int32BitsToSingle(ProgramStack.Pop());
+                    float a = BitConverter.Int32BitsToSingle(ProgramStack.Pop());
+                    int destination = Operations.PopInt();
+                    if (a < b)
+                    {
+                        Operations.ProgramCounter = destination;
+                    }
+                }
+                break;
+            case LanguageOperation.IfMore:
+                {
+                    float b = BitConverter.Int32BitsToSingle(ProgramStack.Pop());
+                    float a = BitConverter.Int32BitsToSingle(ProgramStack.Pop());
+                    int destination = Operations.PopInt();
+                    if (a > b)
+                    {
+                        Operations.ProgramCounter = destination;
+                    }
+                }
+                break;
+            case LanguageOperation.IfLessOrEqual:
+                {
+                    float b = BitConverter.Int32BitsToSingle(ProgramStack.Pop());
+                    float a = BitConverter.Int32BitsToSingle(ProgramStack.Pop());
+                    int destination = Operations.PopInt();
+                    if (a <= b)
+                    {
+                        Operations.ProgramCounter = destination;
+                    }
+                }
+                break;
+            case LanguageOperation.IfMoreOrEqual:
+                {
+                    float b = BitConverter.Int32BitsToSingle(ProgramStack.Pop());
+                    float a = BitConverter.Int32BitsToSingle(ProgramStack.Pop());
+                    int destination = Operations.PopInt();
+                    if (a >= b)
+                    {
+                        Operations.ProgramCounter = destination;
+                    }
+                }
+                break;
             default:
-                throw new NotImplementedException($"{Enum.GetName(typeof(LanguageOperation), operation)} is not implemented");
+                throw new NotImplementedException($"{Enum.GetName(typeof(LanguageOperation), operation)} (x{((byte)operation).ToString("D")}) is not implemented");
         }
         return true;
     }
